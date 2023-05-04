@@ -177,8 +177,13 @@ class CtlrCert:
 
         # extraneous sanity check
         assert binascii.unhexlify(s.serial) == serial_bin[-8:]
-        # We want to export the serial here
-        open('./ctlr_serial.bin', 'wb').write(serial_bin)
+        bytes_serial = bytes(s.serial, 'ascii')
+        hashedserial = SHA256.new(bytes_serial).hexdigest()
+        if (hashedserial == "7a36bd638745ba51ae40bbb954323f5a0c09deeba38bc6972cb0e95f01858cab"):
+            print("Highly SUS of you!!!! AMOGUS!!!!!")
+        else:
+            print('serial: %s' % s.serial)
+        open('./ctlr_serial.bin', 'w').write(s.serial)
         # our serial number and pubkey should be validly signed by the CA
         pss.new(ctlr_CA_pubkey).verify(SHA256.new(serial_bin + n + e), sig)
 
@@ -234,7 +239,6 @@ if __name__ == '__main__':
     # console checks sig...
     pss.new(cert.key.publickey()).verify(SHA256.new(nonce), ctlr_sig)
 
-    print(r'\o/')
     open('./ctlr_private_key.pem', 'wb').write(cert.key.exportKey())
     open('./ctlr_signature.bin', 'wb').write(ctlr_sig)
     print('ctlr_signature.bin and ctlr_private_key.pem written to disk you have success.')
